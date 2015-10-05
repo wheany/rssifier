@@ -10,11 +10,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 
 @SpringBootApplication
 public class RSSifier {
+
+    public static final String DOWNLOAD_TEST_URL = "https://wheany.com/test/";
 
     public static void main(String[] args) {
         JAXBContext jaxbContext;
@@ -55,18 +57,22 @@ public class RSSifier {
                         System.out.println("Link:" + item.getLink().getvalue());
                     }
                 });
-
         try {
-            Document document = Jsoup.parse(RSSifier.class.getResourceAsStream("/news.html"), null, "http://example.com");
+            Downloader downloader = new Downloader(DOWNLOAD_TEST_URL);
 
-            Elements elements = document.select(".news-item");
+            Document document = Jsoup.parse(downloader.download().toFile(), null, DOWNLOAD_TEST_URL);
 
-            elements.stream().forEach(element -> System.out.println("Element:" + element.html()));
+            Elements elements = document.select("a[href]");
 
+            elements.stream().forEach(element -> System.out.println("Element:" + element.outerHtml()));
+
+        } catch (MalformedURLException e) {
+            System.err.println("Malformed URL");
+            e.printStackTrace();
         } catch (IOException e) {
+            System.err.println("IO exception");
             e.printStackTrace();
         }
-
         SpringApplication.run(RSSifier.class, args);
     }
 }
