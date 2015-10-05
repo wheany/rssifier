@@ -12,60 +12,103 @@ import javax.annotation.PostConstruct;
 @SpringView(name = DefaultView.VIEW_NAME)
 public class DefaultView extends VerticalLayout implements View {
     public static final String VIEW_NAME = "";
+    private TextField urlField;
+    private Button fetchButton;
+    private TextField selectorField;
+    private Button selectorTestButton;
+    private Label itemPreview;
+    private TextField linkSelectorField;
+    private TextField linkAttributeField;
+    private Button linkSelectorTestButton;
+    private Label urlPreview;
+    private TextField nextPageSelectorField;
+    private TextField nextPageAttributeField;
+    private Button nextPageSelectorTestButton;
+    private Label nextPagePreview;
 
     @PostConstruct
     void init() {
         HorizontalLayout urlBar = new HorizontalLayout();
-        TextField urlField = new TextField("Url to fetch");
+
+        urlField = new TextField("Url to fetch");
         urlField.setWidth(50, Unit.EM);
         urlField.setValue("http://example.com/news");
+
+        fetchButton = new Button("Fetch");
+
         urlBar.addComponent(urlField);
-        Button fetchButton = new Button("Fetch");
         urlBar.addComponent(fetchButton);
         urlBar.setComponentAlignment(fetchButton, Alignment.BOTTOM_LEFT);
         addComponent(urlBar);
 
         HorizontalLayout selectorBar = new HorizontalLayout();
-        TextField selectorField = new TextField("Selector for items");
+
+        selectorField = new TextField("Selector for items");
         selectorField.setValue("ul.news li");
-        selectorField.setWidth(50, Unit.EM);
+        selectorField.setWidth(20, Unit.EM);
+
+        selectorTestButton = new Button("Test selector");
+
         selectorBar.addComponent(selectorField);
-        Button selectorTestButton = new Button("Test selector");
         selectorBar.addComponent(selectorTestButton);
         selectorBar.setComponentAlignment(selectorTestButton, Alignment.BOTTOM_LEFT);
         addComponent(selectorBar);
 
-        Label itemPreview = new Label("<li class=\"news-item\">\n" +
+        Label previewHeading = new Label("<strong>Item preview:</strong>", ContentMode.HTML);
+        addComponent(previewHeading);
+
+        itemPreview = new Label("<li class=\"news-item\">\n" +
                 "\t<a class=\"news-link\" href=\"http://example.com/news-item1.html\">This is an interesting link</a>\n" +
                 "\t<a class=\"unrelated-link\" href=\"http://example.com/pictures-of-kittens\">This is an unrelated link</a>\n" +
                 "</li>", ContentMode.PREFORMATTED);
         addComponent(itemPreview);
 
         HorizontalLayout linkSelectorBar = new HorizontalLayout();
-        TextField linkSelectorField = new TextField("Selector for link");
+
+        linkSelectorField = new TextField("Selector for link");
         linkSelectorField.setValue("a.news-link");
-        linkSelectorField.setWidth(50, Unit.EM);
+        linkSelectorField.setWidth(20, Unit.EM);
+
+        linkAttributeField = new TextField("Attribute for link");
+        linkAttributeField.setValue("href");
+        linkAttributeField.setWidth(10, Unit.EM);
+
+        linkSelectorTestButton = new Button("Test selector");
+
         linkSelectorBar.addComponent(linkSelectorField);
-        Button linkSelectorTestButton = new Button("Test selector");
+        linkSelectorBar.addComponent(linkAttributeField);
         linkSelectorBar.addComponent(linkSelectorTestButton);
         linkSelectorBar.setComponentAlignment(linkSelectorTestButton, Alignment.BOTTOM_LEFT);
         addComponent(linkSelectorBar);
 
-        Label urlPreview = new Label("http://example.com/news-item1.html", ContentMode.PREFORMATTED);
+        Label urlPreviewHeading = new Label("<strong>URL preview:</strong>", ContentMode.HTML);
+        addComponent(urlPreviewHeading);
+
+        urlPreview = new Label("http://example.com/news-item1.html", ContentMode.PREFORMATTED);
         addComponent(urlPreview);
 
         HorizontalLayout nextPageSelectorBar = new HorizontalLayout();
-        TextField nextPageSelectorField = new TextField("Selector for link");
-        nextPageSelectorField.setValue("a.next-page");
-        nextPageSelectorField.setWidth(50, Unit.EM);
+
+        nextPageSelectorField = new TextField("Selector for link");
+        nextPageSelectorField.setValue("a[rel=next]");
+        nextPageSelectorField.setWidth(20, Unit.EM);
+
+        nextPageAttributeField = new TextField("Attribute for link");
+        nextPageAttributeField.setValue("href");
+        nextPageAttributeField.setWidth(10, Unit.EM);
+
+        nextPageSelectorTestButton = new Button("Test selector");
+
         nextPageSelectorBar.addComponent(nextPageSelectorField);
-        Button nextPageSelectorTestButton = new Button("Test selector");
         nextPageSelectorBar.addComponent(nextPageSelectorTestButton);
         nextPageSelectorBar.setComponentAlignment(nextPageSelectorTestButton, Alignment.BOTTOM_LEFT);
 
         addComponent(nextPageSelectorBar);
 
-        Label nextPagePreview = new Label("<a class=\"next-page\" href=\"news-page2.html\">", ContentMode.PREFORMATTED);
+        Label nextPagePreviewHeading = new Label("<strong>Next page link preview:</strong>", ContentMode.HTML);
+        addComponent(nextPagePreviewHeading);
+
+        nextPagePreview = new Label("<a class=\"next-page\" href=\"news-page2.html\" rel=\"next\">", ContentMode.PREFORMATTED);
         addComponent(nextPagePreview);
     }
 
