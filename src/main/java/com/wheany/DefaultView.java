@@ -7,12 +7,22 @@ import com.vaadin.server.UserError;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.*;
+import com.wheany.generated.rss.Rss;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 
 import javax.annotation.PostConstruct;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 @SpringView(name = DefaultView.VIEW_NAME)
 public class DefaultView extends VerticalLayout implements View {
@@ -202,9 +212,34 @@ public class DefaultView extends VerticalLayout implements View {
             }
         });
 
+        Button generateButton = new Button("Generate");
+        generateButton.addClickListener(event -> {
+            Rss rss = generator.generate();
+
+            try {
+                JAXBContext jaxbContext = JAXBContext.newInstance(Rss.class);
+                Marshaller marshaller = jaxbContext.createMarshaller();
+
+                final Path workDir = Paths.get("generated-rss");
+                Files.createDirectories(workDir);
+
+                Path workFile = Files.createTempFile(workDir, "rss", ".xml");
+
+                marshaller.marshal(rss, workFile.toFile());
+
+            } catch (JAXBException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        selectorUI.addComponent(generateButton);
+
         selectorUI.setEnabled(false);
 
         addComponent(selectorUI);
+
+
     }
 
     @Override

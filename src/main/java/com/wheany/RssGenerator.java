@@ -1,15 +1,17 @@
 package com.wheany;
 
+import com.wheany.generated.rss.*;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import java.util.List;
 
 public class RssGenerator {
     private final Document document;
     private Elements items;
     private String linkSelector;
     private String linkAttribute;
-    private String nextPageSelector;
     private String nextPageAttribute = "";
     private Element nextPageElement;
 
@@ -84,5 +86,57 @@ public class RssGenerator {
             return nextPageElement.attr("abs:" + nextPageAttribute);
         }
         return "";
+    }
+
+    public Rss generate() {
+        Rss feed = new Rss();
+        feed.setVersion("2.0");
+
+        Channel channel = new Channel();
+        feed.setChannel(channel);
+
+        List<Object> content = channel.getItemOrTitleOrLinkOrDescriptionOrLanguageOrCopyrightOrManagingEditorOrWebMasterOrPubDateOrLastBuildDateOrCategoryOrGeneratorOrDocsOrCloudOrTtlOrImageOrTextInputOrSkipHoursOrSkipDays();
+
+        Title title = new Title();
+        title.setvalue(document.title());
+        content.add(title);
+
+        Link link = new Link();
+        link.setvalue(document.baseUri());
+        content.add(link);
+
+        Generator generator = new Generator();
+        generator.setvalue("RSSifier");
+        content.add(generator);
+
+        Description description = new Description();
+        description.setvalue("Generated feed from " + document.baseUri());
+        content.add(description);
+
+        items.stream().forEach(element -> {
+            Item item = new Item();
+            Title itemTitle = new Title();
+            Element linkElement = element.select(linkSelector).first();
+            Link itemLink = new Link();
+            String url = "";
+            Guid guid = new Guid();
+
+            if(linkElement != null) {
+                itemTitle.setvalue(linkElement.text());
+                url = linkElement.attr("abs:" + linkAttribute);
+            } else {
+                itemTitle.setvalue("[no title]");
+            }
+            itemLink.setvalue(url);
+            guid.setvalue(url);
+
+            item.getTitleOrDescription().add(itemTitle);
+            item.setLink(itemLink);
+            item.getAuthorOrCategoryOrCommentsOrEnclosureOrGuidOrPubDateOrSource().add(guid);
+
+            content.add(item);
+        });
+
+        return feed;
     }
 }
