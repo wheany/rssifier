@@ -116,10 +116,13 @@ public class RssGenerator {
         items.stream().forEach(element -> {
             Item item = new Item();
             Title itemTitle = new Title();
+            Description itemDescription = new Description();
             Element linkElement = element.select(linkSelector).first();
             Link itemLink = new Link();
             String url = "";
             Guid guid = new Guid();
+
+            itemDescription.setvalue(element.html());
 
             if(linkElement != null) {
                 itemTitle.setvalue(linkElement.text());
@@ -131,6 +134,7 @@ public class RssGenerator {
             guid.setvalue(url);
 
             item.getTitleOrDescription().add(itemTitle);
+            item.getTitleOrDescription().add(itemDescription);
             item.setLink(itemLink);
             item.getAuthorOrCategoryOrCommentsOrEnclosureOrGuidOrPubDateOrSource().add(guid);
 
