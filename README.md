@@ -18,6 +18,8 @@ The UI is pretty horrible as-is, but here are some values to try:
 ###Selector for link
 `a`
 
+* Click on "Test link and attribute selector"
+
 ###Attribute for link
 `href`
 
@@ -27,9 +29,14 @@ The UI is pretty horrible as-is, but here are some values to try:
 ###Attribute for link
 `href`
 
-When you click on "Generate", an xml file should appear under `generated-rss` directory
+* Click on "Test link and attribute selector"
+
+When you click on "Generate", an xml file should appear under `generated-rss` directory.
+Remember to click each of the "Test link and attribute selector" buttons before clicking on "Generate",
+or the generation will fail.
 
 ##TODO:
+* Make clicking on "Test link and attribute selector" buttons not required.
 * Save the values given on the page so that...
 * ... a timed task can be used to refresh the page content periodically
 * Serve the generated rss with the correct content-type
