@@ -218,13 +218,14 @@ public class DefaultView extends VerticalLayout implements View {
 
             try {
                 JAXBContext jaxbContext = JAXBContext.newInstance(Rss.class);
-                Marshaller marshaller = jaxbContext.createMarshaller();
 
                 final Path workDir = Paths.get("generated-rss");
                 Files.createDirectories(workDir);
 
                 Path workFile = Files.createTempFile(workDir, "rss", ".xml");
 
+                Marshaller marshaller = jaxbContext.createMarshaller();
+                marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
                 marshaller.marshal(rss, workFile.toFile());
 
             } catch (JAXBException e) {
