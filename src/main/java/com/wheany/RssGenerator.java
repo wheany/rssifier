@@ -5,26 +5,54 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Objects;
 
 public class RssGenerator {
-    private final Document document;
+    private Document document;
+    private String itemSelector = "";
     private Elements items;
-    private String linkSelector;
-    private String linkAttribute;
+
+    private String linkSelector = "";
+    private String linkAttribute = "";
+    private Elements links;
+
+    private String nextPageSelector = "";
     private String nextPageAttribute = "";
     private Element nextPageElement;
 
-    public RssGenerator(Document doc) {
-        this.document = doc;
+    public void setDocument(@NotNull Document document) {
+        this.document = Objects.requireNonNull(document);
+        setDocumentOutputSettings();
+        refreshItems();
+        refreshLinks();
+        refreshNextPageElement();
+    }
+
+    public RssGenerator() {
+        setDocument(new Document(""));
+    }
+
+    public RssGenerator(@NotNull Document doc) {
+        setDocument(doc);
+    }
+
+    private void setDocumentOutputSettings() {
         Document.OutputSettings outputSettings = new Document.OutputSettings();
 
         outputSettings.indentAmount(4).prettyPrint(true);
-        doc.outputSettings(outputSettings);
+        this.document.outputSettings(outputSettings);
     }
 
     public void setItemSelector(String selector) {
-        this.items = document.select(selector);
+        this.itemSelector = selector;
+        refreshItems();
+    }
+
+    private void refreshItems() {
+        this.items = document.select(itemSelector);
+        refreshLinks();
     }
 
     public Element getItemElement(int index) {
@@ -33,42 +61,66 @@ public class RssGenerator {
         }
         return items.get(index);
     }
+    public int getNumElements() {
+        return items.size();
+    }
 
     public void setLinkSelector(String selector) {
         this.linkSelector = selector;
+        refreshLinks();
+    }
+
+    private void refreshLinks() {
+        this.links = new Elements();
+        for(Element item: items) {
+            Elements links = item.select(linkSelector);
+            this.links.add(links.first());
+        }
+    }
+
+    public int getNumLinks() {
+        return links.size();
     }
 
     public Element getLinkElement(int index) {
-        if(index < 0 || index >= items.size()) {
+        if(index < 0 || index >= links.size()) {
             return null;
         }
-        Elements elements = items.get(index).select(linkSelector);
-        return elements.first();
+        return links.get(index);
     }
 
     public void setLinkAttribute(String attribute) {
-        this.linkAttribute = attribute;
+        if (attribute != null) {
+            this.linkAttribute = attribute;
+        } else {
+            this.linkAttribute = "";
+        }
     }
 
     public String getLink(int index) {
-        if(index < 0 || index >= items.size()) {
+        if(index < 0 || index >= links.size()) {
             return "";
         }
-        Elements elements = items.get(index).select(linkSelector);
-        Element firstLink = elements.first();
+        Element link = links.get(index);
 
-        if(firstLink != null) {
-            return firstLink.attr("abs:" + linkAttribute);
+        if(link != null) {
+            return link.attr("abs:" + linkAttribute);
         }
 
         return "";
     }
 
     public void setNextPageSelector(String nextPageSelector) {
-        Elements elements = document.select(nextPageSelector);
+        this.nextPageSelector = nextPageSelector;
+        refreshNextPageElement();
+    }
+
+    private void refreshNextPageElement() {
+        Elements elements = document.select(this.nextPageSelector);
 
         nextPageElement = elements.first();
     }
+
     public Element getNextPageElement() {
         return nextPageElement;
     }
