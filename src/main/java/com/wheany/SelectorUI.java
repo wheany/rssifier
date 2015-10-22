@@ -4,6 +4,8 @@ import com.vaadin.data.Property;
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.data.util.PropertysetItem;
+import com.vaadin.shared.ui.label.ContentMode;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Label;
@@ -19,7 +21,6 @@ import java.util.logging.Logger;
 
 public class SelectorUI extends CustomComponent {
     private static final Logger logger = Logger.getLogger(SelectorUI.class.getName());
-    private final PropertysetItem data;
     private final RssGenerator generator = new RssGenerator();
 
     private final ObjectProperty<String> urlProperty = new ObjectProperty<>("");
@@ -63,13 +64,13 @@ public class SelectorUI extends CustomComponent {
 
         Element itemElement = generator.getItemElement(itemPreviewIndex);
         if (itemElement != null) {
-            itemPreviewProperty.setValue(itemElement.toString());
+            itemPreviewProperty.setValue(itemElement.outerHtml());
         } else  {
             itemPreviewProperty.setValue("[Item element not found]");
         }
         Element linkElement = generator.getLinkElement(itemPreviewIndex);
         if (linkElement != null) {
-            linkElementPreviewProperty.setValue(linkElement.toString());
+            linkElementPreviewProperty.setValue(linkElement.outerHtml());
         } else {
             linkElementPreviewProperty.setValue("[Link element not found]");
         }
@@ -83,7 +84,7 @@ public class SelectorUI extends CustomComponent {
     private void refreshNextPageLinkPreview() {
         Element nextPageLinkElement = generator.getNextPageElement();
         if (nextPageLinkElement != null) {
-            nextPageLinkElementPreviewProperty.setValue(nextPageLinkElement.toString());
+            nextPageLinkElementPreviewProperty.setValue(nextPageLinkElement.outerHtml());
         } else {
             nextPageLinkElementPreviewProperty.setValue("[Next page link element not found]");
         }
@@ -91,14 +92,11 @@ public class SelectorUI extends CustomComponent {
     }
 
     public SelectorUI() {
-        data = new PropertysetItem();
+        PropertysetItem data = new PropertysetItem();
 
         data.addItemProperty("url", urlProperty);
 
-        //TODO: add buttons for downloading and item index changing.
-//         downloadButton.clickevent event -> {
-//            downloadAndParse();
-//        });
+        //TODO: add buttons for item index changing.
 //         nextElementButton.clickevent event -> {
 //            itemPreviewIndex++;
 //            refreshItemAndLinkPreview()
@@ -115,6 +113,7 @@ public class SelectorUI extends CustomComponent {
             itemPreviewIndex = 0;
             refreshItemAndLinkPreview();
         });
+        data.addItemProperty("itemSelector", itemSelectorProperty);
 
         data.addItemProperty("itemPreview", itemPreviewProperty);
         data.addItemProperty("itemPreviewIndex", itemPreviewIndexProperty);
@@ -146,7 +145,7 @@ public class SelectorUI extends CustomComponent {
 
         Property.ValueChangeListener nextPageLinkListener = event -> {
             generator.setNextPageSelector(nextPageSelectorProperty.getValue());
-            generator.setLinkAttribute(nextPageAttributeProperty.getValue());
+            generator.setNextPageAttribute(nextPageAttributeProperty.getValue());
             refreshNextPageLinkPreview();
         };
         nextPageSelectorProperty.addValueChangeListener(nextPageLinkListener);
@@ -159,31 +158,40 @@ public class SelectorUI extends CustomComponent {
 
         FieldGroup binder = new FieldGroup(data);
         form.addComponent(binder.buildAndBind("Page URL", "url"));
+        final Button downloadButton = new Button("Download URL", event -> downloadAndParse());
+        form.addComponent(downloadButton);
         form.addComponent(binder.buildAndBind("Item selector", "itemSelector"));
         final Label itemPreviewComponent = new Label(itemPreviewProperty);
         itemPreviewComponent.setCaption("Item preview");
+        itemPreviewComponent.setContentMode(ContentMode.PREFORMATTED);
         form.addComponent(itemPreviewComponent);
         final Label itemPreviewIndexComponent = new Label(itemPreviewIndexProperty);
-        itemPreviewComponent.setCaption("Item number");
+        itemPreviewIndexComponent.setCaption("Item number");
         form.addComponent(itemPreviewIndexComponent);
         form.addComponent(binder.buildAndBind("Link selector", "linkSelector"));
         form.addComponent(binder.buildAndBind("Link attribute", "linkAttribute"));
         final Label linkElementPreviewComponent = new Label(linkElementPreviewProperty);
         linkElementPreviewComponent.setCaption("Link preview");
+        linkElementPreviewComponent.setContentMode(ContentMode.PREFORMATTED);
         form.addComponent(linkElementPreviewComponent);
         final Label linkUrlPreviewComponent = new Label(linkUrlPreviewProperty);
         linkUrlPreviewComponent.setCaption("Link url preview");
         form.addComponent(linkUrlPreviewComponent);
         final Label linkPreviewIndexComponent = new Label(linkPreviewIndexProperty);
-        itemPreviewComponent.setCaption("Link number");
+        linkPreviewIndexComponent.setCaption("Link number");
         form.addComponent(linkPreviewIndexComponent);
         form.addComponent(binder.buildAndBind("Next page link selector", "nextPageSelector"));
         form.addComponent(binder.buildAndBind("Next page link attribute", "nextPageAttribute"));
         final Label nextPageLinkElementPreviewComponent = new Label(nextPageLinkElementPreviewProperty);
         nextPageLinkElementPreviewComponent.setCaption("Next page link preview");
+        nextPageLinkElementPreviewComponent.setContentMode(ContentMode.PREFORMATTED);
         form.addComponent(nextPageLinkElementPreviewComponent);
         final Label nextPageLinkUrlPreviewComponent = new Label(nextPageUrlPreviewProperty);
         nextPageLinkUrlPreviewComponent.setCaption("Next page link url preview");
         form.addComponent(nextPageLinkUrlPreviewComponent);
+
+        binder.setBuffered(false);
+
+        setCompositionRoot(form);
     }
 }

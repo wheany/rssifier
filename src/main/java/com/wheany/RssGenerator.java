@@ -1,5 +1,6 @@
 package com.wheany;
 
+import com.google.gwt.thirdparty.guava.common.base.Strings;
 import com.wheany.generated.rss.*;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -12,11 +13,11 @@ import java.util.Objects;
 public class RssGenerator {
     private Document document;
     private String itemSelector = "";
-    private Elements items;
+    private Elements items = new Elements();
 
     private String linkSelector = "";
     private String linkAttribute = "";
-    private Elements links;
+    private Elements links = new Elements();
 
     private String nextPageSelector = "";
     private String nextPageAttribute = "";
@@ -46,12 +47,14 @@ public class RssGenerator {
     }
 
     public void setItemSelector(String selector) {
-        this.itemSelector = selector;
+        this.itemSelector = Objects.requireNonNull(selector);
         refreshItems();
     }
 
     private void refreshItems() {
-        this.items = document.select(itemSelector);
+        if (!Strings.isNullOrEmpty(itemSelector)) {
+            this.items = document.select(itemSelector);
+        }
         refreshLinks();
     }
 
@@ -66,15 +69,19 @@ public class RssGenerator {
     }
 
     public void setLinkSelector(String selector) {
-        this.linkSelector = selector;
+        this.linkSelector = Objects.requireNonNull(selector);
         refreshLinks();
     }
 
     private void refreshLinks() {
         this.links = new Elements();
         for(Element item: items) {
-            Elements links = item.select(linkSelector);
-            this.links.add(links.first());
+            if (!Strings.isNullOrEmpty(linkSelector)) {
+                Elements links = item.select(linkSelector);
+                if (links.size() > 0) {
+                    this.links.add(links.first());
+                }
+            }
         }
     }
 
@@ -90,15 +97,11 @@ public class RssGenerator {
     }
 
     public void setLinkAttribute(String attribute) {
-        if (attribute != null) {
-            this.linkAttribute = attribute;
-        } else {
-            this.linkAttribute = "";
-        }
+        this.linkAttribute = Objects.requireNonNull(attribute);
     }
 
     public String getLink(int index) {
-        if(index < 0 || index >= links.size()) {
+        if(index < 0 || index >= links.size() || Strings.isNullOrEmpty(linkAttribute)) {
             return "";
         }
         Element link = links.get(index);
@@ -116,9 +119,12 @@ public class RssGenerator {
     }
 
     private void refreshNextPageElement() {
-        Elements elements = document.select(this.nextPageSelector);
-
-        nextPageElement = elements.first();
+        if (!Strings.isNullOrEmpty(nextPageSelector)) {
+            Elements elements = document.select(this.nextPageSelector);
+            if(elements.size() > 0) {
+                nextPageElement = elements.first();
+            }
+        }
     }
 
     public Element getNextPageElement() {
@@ -126,15 +132,12 @@ public class RssGenerator {
     }
 
     public void setNextPageAttribute(String nextPageAttribute) {
-        if(nextPageAttribute != null) {
-            this.nextPageAttribute = nextPageAttribute;
-        } else {
-            this.nextPageAttribute = "";
-        }
+        this.nextPageAttribute = Objects.requireNonNull(nextPageAttribute);
+        refreshNextPageElement();
     }
 
     public String getNextPageLink() {
-        if (nextPageElement != null) {
+        if (nextPageElement != null && !Strings.isNullOrEmpty(nextPageAttribute)) {
             return nextPageElement.attr("abs:" + nextPageAttribute);
         }
         return "";
@@ -169,14 +172,19 @@ public class RssGenerator {
             Item item = new Item();
             Title itemTitle = new Title();
             Description itemDescription = new Description();
-            Element linkElement = element.select(linkSelector).first();
+
+            Element linkElement = null;
+            if (!Strings.isNullOrEmpty(linkSelector)) {
+                linkElement = element.select(linkSelector).first();
+            }
+
             Link itemLink = new Link();
             String url = "";
             Guid guid = new Guid();
 
             itemDescription.setvalue(element.html());
 
-            if(linkElement != null) {
+            if (linkElement != null && !Strings.isNullOrEmpty(linkAttribute)) {
                 itemTitle.setvalue(linkElement.text());
                 url = linkElement.attr("abs:" + linkAttribute);
             } else {
