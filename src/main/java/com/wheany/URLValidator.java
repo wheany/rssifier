@@ -1,5 +1,6 @@
 package com.wheany;
 
+import com.google.gwt.thirdparty.guava.common.base.Strings;
 import com.vaadin.data.validator.AbstractStringValidator;
 
 import java.net.MalformedURLException;
@@ -13,6 +14,9 @@ public class URLValidator extends AbstractStringValidator {
 
     @Override
     protected boolean isValidValue(String value) {
+        if(Strings.isNullOrEmpty(value)) {
+            return true;
+        }
         try {
             new URL(value);
         } catch (MalformedURLException e) {

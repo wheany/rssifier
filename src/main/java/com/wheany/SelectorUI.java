@@ -5,10 +5,7 @@ import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.data.util.PropertysetItem;
 import com.vaadin.shared.ui.label.ContentMode;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.CustomComponent;
-import com.vaadin.ui.FormLayout;
-import com.vaadin.ui.Label;
+import com.vaadin.ui.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 
@@ -59,8 +56,16 @@ public class SelectorUI extends CustomComponent {
     }
 
     private void refreshItemAndLinkPreview() {
-        itemPreviewIndexProperty.setValue(String.format("%d/%d", itemPreviewIndex, generator.getNumElements()));
-        linkPreviewIndexProperty.setValue(String.format("%d/%d", itemPreviewIndex, generator.getNumLinks()));
+        int numElements = generator.getNumElements() - 1;
+        itemPreviewIndex = Math.min(Math.max(itemPreviewIndex, 0), numElements);
+
+        if (numElements > 0) {
+            itemPreviewIndexProperty.setValue(String.format("%d/%d", itemPreviewIndex + 1, generator.getNumElements()));
+            linkPreviewIndexProperty.setValue(String.format("%d/%d", itemPreviewIndex + 1, generator.getNumLinks()));
+        } else {
+            itemPreviewIndexProperty.setValue(" — ");
+            linkPreviewIndexProperty.setValue(" — ");
+        }
 
         Element itemElement = generator.getItemElement(itemPreviewIndex);
         if (itemElement != null) {
@@ -95,16 +100,6 @@ public class SelectorUI extends CustomComponent {
         PropertysetItem data = new PropertysetItem();
 
         data.addItemProperty("url", urlProperty);
-
-        //TODO: add buttons for item index changing.
-//         nextElementButton.clickevent event -> {
-//            itemPreviewIndex++;
-//            refreshItemAndLinkPreview()
-//        });
-//         previousElementButton.clickevent event -> {
-//            itemPreviewIndex--;
-//            refreshItemAndLinkPreview()
-//        });
 
         final ObjectProperty<String> itemSelectorProperty = new ObjectProperty<>("");
 
@@ -157,7 +152,9 @@ public class SelectorUI extends CustomComponent {
         FormLayout form = new FormLayout();
 
         FieldGroup binder = new FieldGroup(data);
-        form.addComponent(binder.buildAndBind("Page URL", "url"));
+        Field urlField = binder.buildAndBind("Page URL", "url");
+        urlField.addValidator(new URLValidator());
+        form.addComponent(urlField);
         final Button downloadButton = new Button("Download URL", event -> downloadAndParse());
         form.addComponent(downloadButton);
         form.addComponent(binder.buildAndBind("Item selector", "itemSelector"));
@@ -165,9 +162,23 @@ public class SelectorUI extends CustomComponent {
         itemPreviewComponent.setCaption("Item preview");
         itemPreviewComponent.setContentMode(ContentMode.PREFORMATTED);
         form.addComponent(itemPreviewComponent);
+        final HorizontalLayout itemPreviewIndexUI = new HorizontalLayout();
         final Label itemPreviewIndexComponent = new Label(itemPreviewIndexProperty);
-        itemPreviewIndexComponent.setCaption("Item number");
-        form.addComponent(itemPreviewIndexComponent);
+        itemPreviewIndexComponent.addStyleName("spaced-label");
+        final Button decrementItemNumberButton = new Button("-", event -> {
+            itemPreviewIndex--;
+            refreshItemAndLinkPreview();
+        });
+        final Button incrementItemNumberButton = new Button("+", event -> {
+            itemPreviewIndex++;
+            refreshItemAndLinkPreview();
+        });
+        itemPreviewIndexUI.setCaption("Item number");
+        itemPreviewIndexUI.addComponent(decrementItemNumberButton);
+        itemPreviewIndexUI.addComponent(itemPreviewIndexComponent);
+        itemPreviewIndexUI.addComponent(incrementItemNumberButton);
+        form.addComponent(itemPreviewIndexUI);
+
         form.addComponent(binder.buildAndBind("Link selector", "linkSelector"));
         form.addComponent(binder.buildAndBind("Link attribute", "linkAttribute"));
         final Label linkElementPreviewComponent = new Label(linkElementPreviewProperty);

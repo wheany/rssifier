@@ -1,0 +1,13 @@
+@import "../valo/valo.scss";
+
+@mixin rssifier {
+  @include valo;
+
+  /* An actual theme rule */
+  .spaced-label {
+    padding-right: 1ex;
+    padding-left: 1ex;
+  }
+}
+
+@include rssifier;
