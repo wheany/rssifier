@@ -22,14 +22,6 @@ public class SelectorUI extends CustomComponent {
     private final PropertysetItem data;
     private final RssGenerator generator = new RssGenerator();
 
-    private static <T> ObjectProperty<T> createListenedProperty(T initialValue, Property.ValueChangeListener listener) {
-        ObjectProperty<T> property = new ObjectProperty<>(initialValue);
-
-        property.addValueChangeListener(listener);
-
-        return property;
-    }
-
     private final ObjectProperty<String> urlProperty = new ObjectProperty<>("");
     private final ObjectProperty<String> itemPreviewProperty = new ObjectProperty<>("");
     private final ObjectProperty<String> itemPreviewIndexProperty = new ObjectProperty<>("0/0");
@@ -116,11 +108,13 @@ public class SelectorUI extends CustomComponent {
 //            refreshItemAndLinkPreview()
 //        });
 
-        data.addItemProperty("itemSelector", createListenedProperty("", event -> {
-            generator.setItemSelector((String) event.getProperty().getValue());
+        final ObjectProperty<String> itemSelectorProperty = new ObjectProperty<>("");
+
+        itemSelectorProperty.addValueChangeListener(event -> {
+            generator.setItemSelector(itemSelectorProperty.getValue());
             itemPreviewIndex = 0;
             refreshItemAndLinkPreview();
-        }));
+        });
 
         data.addItemProperty("itemPreview", itemPreviewProperty);
         data.addItemProperty("itemPreviewIndex", itemPreviewIndexProperty);
