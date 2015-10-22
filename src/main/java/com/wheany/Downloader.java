@@ -21,6 +21,9 @@ public class Downloader {
     public Downloader(String url) throws MalformedURLException {
         this.url = new URL(url);
     }
+    public Downloader(URL url) {
+        this.url = url;
+    }
 
     public Path download() throws IOException {
         URLConnection conn = url.openConnection();
