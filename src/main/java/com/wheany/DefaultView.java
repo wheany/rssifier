@@ -28,22 +28,6 @@ import java.nio.file.StandardCopyOption;
 public class DefaultView extends VerticalLayout implements View {
     public static final String VIEW_NAME = "";
 
-    private TextField urlField;
-    private Button fetchButton;
-
-    private TextField selectorField;
-    private Label itemPreview;
-    private TextField linkSelectorField;
-    private TextField linkAttributeField;
-    private Label linkPreview;
-    private Label urlPreview;
-    private TextField nextPageSelectorField;
-    private TextField nextPageAttributeField;
-    private Label nextPagePreview;
-    private Label nextPageUrlPreview;
-
-    private RssGenerator generator;
-
     @PostConstruct
     void init() {
         addComponent(new SelectorUI());
