@@ -10,11 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-/**
- * User: Jan-Erik Finnberg
- * Date: 5.10.2015
- * Time: 13:52
- */
 public class Downloader {
     private final URL url;
 
