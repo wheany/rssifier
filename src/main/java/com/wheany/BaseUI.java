@@ -11,7 +11,7 @@ import com.vaadin.ui.VerticalLayout;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Theme("rssifier")
-@SpringUI
+@SpringUI(path="rssifier")
 public class BaseUI extends UI {
 
     // we can use either constructor autowiring or field autowiring
