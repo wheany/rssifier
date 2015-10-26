@@ -16,8 +16,8 @@ import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class SelectorUI extends CustomComponent {
-    private static final Logger logger = Logger.getLogger(SelectorUI.class.getName());
+public class EditorUI extends CustomComponent {
+    private static final Logger logger = Logger.getLogger(EditorUI.class.getName());
     private final RssGenerator generator = new RssGenerator();
 
     private final ObjectProperty<String> urlProperty = new ObjectProperty<>("");
@@ -96,7 +96,7 @@ public class SelectorUI extends CustomComponent {
         nextPageUrlPreviewProperty.setValue(generator.getNextPageLink());
     }
 
-    public SelectorUI() {
+    public EditorUI() {
         PropertysetItem data = new PropertysetItem();
 
         data.addItemProperty("url", urlProperty);

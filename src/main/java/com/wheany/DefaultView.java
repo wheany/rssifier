@@ -13,7 +13,7 @@ public class DefaultView extends VerticalLayout implements View {
 
     @PostConstruct
     void init() {
-        addComponent(new SelectorUI());
+        addComponent(new EditorUI());
     }
 
     @Override
