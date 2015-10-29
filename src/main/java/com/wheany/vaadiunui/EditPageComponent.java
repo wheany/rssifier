@@ -1,4 +1,4 @@
-package com.wheany.ui;
+package com.wheany.vaadiunui;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.fieldgroup.FieldGroup;
@@ -19,8 +19,8 @@ import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class EditorUI extends CustomComponent {
-    private static final Logger logger = Logger.getLogger(EditorUI.class.getName());
+public class EditPageComponent extends CustomComponent {
+    private static final Logger logger = Logger.getLogger(EditPageComponent.class.getName());
     private final RssGenerator generator = new RssGenerator();
 
     private final ObjectProperty<String> urlProperty = new ObjectProperty<>("");
@@ -100,7 +100,7 @@ public class EditorUI extends CustomComponent {
         nextPageUrlPreviewProperty.setValue(generator.getNextPageLink());
     }
 
-    public EditorUI(Path baseDir) {
+    public EditPageComponent(Path baseDir) {
         this.baseDir = baseDir;
 
         PropertysetItem data = new PropertysetItem();

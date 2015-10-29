@@ -1,6 +1,6 @@
 package com.wheany;
 
-import javax.validation.constraints.NotNull;
+import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;

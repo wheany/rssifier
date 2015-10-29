@@ -21,8 +21,7 @@ public class Downloader {
 
         Files.createDirectories(workDir);
 
-        Path workFile = Files.createTempFile(workDir, "rssfier-dl", ".html");
-        workFile.toFile().deleteOnExit();
+        Path workFile = Files.createFile(workDir.resolve("download.html"));
 
         try (final InputStream in = conn.getInputStream()) {
             Files.copy(in, workFile, StandardCopyOption.REPLACE_EXISTING);
