@@ -11,10 +11,15 @@ import com.wheany.Downloader;
 import com.wheany.URLValidator;
 import com.wheany.Util;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -60,6 +65,15 @@ public class NewPageComponent extends CustomComponent {
         } catch (IOException ioe) {
             logger.log(Level.SEVERE, "IOException while downloading:", ioe);
         }
+
+        Properties config = new Properties();
+        config.put("url", baseUrl);
+        try(OutputStream os = Files.newOutputStream(namedPath.getPath().resolve("config.properties"))){
+            config.store(os, "Parsing settings");
+        } catch (IOException ioe) {
+            logger.log(Level.SEVERE, "IOException while writing config:", ioe);
+        }
+
         URI location = getUI().getPage().getLocation();
         String newLocation = location.toString() + "edit?id=" + namedPath.getName();
         getUI().getPage().open(newLocation, null, false);

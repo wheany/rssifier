@@ -13,9 +13,13 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,6 +31,7 @@ public class EditPageComponent extends CustomComponent {
     private final ObjectProperty<String> itemPreviewProperty = new ObjectProperty<>("");
     private final ObjectProperty<String> itemPreviewIndexProperty = new ObjectProperty<>("0/0");
     private final Path baseDir;
+    private final Properties config;
     private int itemPreviewIndex = 0;
 
     private final ObjectProperty<String> linkElementPreviewProperty = new ObjectProperty<>("");
@@ -35,6 +40,16 @@ public class EditPageComponent extends CustomComponent {
 
     private final ObjectProperty<String> nextPageLinkElementPreviewProperty = new ObjectProperty<>("");
     private final ObjectProperty<String> nextPageUrlPreviewProperty = new ObjectProperty<>("");
+
+    private static Properties defaults = new Properties();
+
+    static {
+        defaults.put("itemSelector", "");
+        defaults.put("linkSelector", "a");
+        defaults.put("linkAttribute", "href");
+        defaults.put("nextPageSelector", "a[rel=\"next\"]");
+        defaults.put("nextPageAttribute", "href");
+    }
 
     private void downloadAndParse() {
         Downloader downloader;
@@ -48,7 +63,7 @@ public class EditPageComponent extends CustomComponent {
         } catch (MalformedURLException mue) {
             logger.log(Level.SEVERE, "Malformed url:" + baseUrl, mue);
             return;
-        } catch (IOException  ioe) {
+        } catch (IOException ioe) {
             logger.log(Level.SEVERE, "IOException while downloading:", ioe);
             return;
         }
@@ -74,7 +89,7 @@ public class EditPageComponent extends CustomComponent {
         Element itemElement = generator.getItemElement(itemPreviewIndex);
         if (itemElement != null) {
             itemPreviewProperty.setValue(itemElement.outerHtml());
-        } else  {
+        } else {
             itemPreviewProperty.setValue("[Item element not found]");
         }
         Element linkElement = generator.getLinkElement(itemPreviewIndex);
@@ -90,6 +105,7 @@ public class EditPageComponent extends CustomComponent {
             linkUrlPreviewProperty.setValue("");
         }
     }
+
     private void refreshNextPageLinkPreview() {
         Element nextPageLinkElement = generator.getNextPageElement();
         if (nextPageLinkElement != null) {
@@ -102,29 +118,41 @@ public class EditPageComponent extends CustomComponent {
 
     public EditPageComponent(Path baseDir) {
         this.baseDir = baseDir;
+        this.config = new Properties(defaults);
+        try (InputStream is = Files.newInputStream(baseDir.resolve("config.properties"))) {
+            config.load(is);
+
+            urlProperty.setValue(config.getProperty("url"));
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
 
         PropertysetItem data = new PropertysetItem();
 
         data.addItemProperty("url", urlProperty);
 
-        final ObjectProperty<String> itemSelectorProperty = new ObjectProperty<>("");
+        final ObjectProperty<String> itemSelectorProperty = new ObjectProperty<>(config.getProperty("itemSelector"));
 
         itemSelectorProperty.addValueChangeListener(event -> {
             generator.setItemSelector(itemSelectorProperty.getValue());
+            putAndSave("itemSelector", itemSelectorProperty.getValue());
             itemPreviewIndex = 0;
             refreshItemAndLinkPreview();
         });
+
         data.addItemProperty("itemSelector", itemSelectorProperty);
 
         data.addItemProperty("itemPreview", itemPreviewProperty);
         data.addItemProperty("itemPreviewIndex", itemPreviewIndexProperty);
 
-        final ObjectProperty<String> linkSelectorProperty = new ObjectProperty<>("a");
-        final ObjectProperty<String> linkAttributeProperty = new ObjectProperty<>("href");
+        final ObjectProperty<String> linkSelectorProperty = new ObjectProperty<>(config.getProperty("linkSelector"));
+        final ObjectProperty<String> linkAttributeProperty = new ObjectProperty<>(config.getProperty("linkAttribute"));
 
         Property.ValueChangeListener linkListener = event -> {
             generator.setLinkSelector(linkSelectorProperty.getValue());
             generator.setLinkAttribute(linkAttributeProperty.getValue());
+            putAndSave("linkSelector", linkSelectorProperty.getValue());
+            putAndSave("linkAttribute", linkAttributeProperty.getValue());
             itemPreviewIndex = 0;
             refreshItemAndLinkPreview();
         };
@@ -138,8 +166,8 @@ public class EditPageComponent extends CustomComponent {
         data.addItemProperty("linkUrlPreview", linkUrlPreviewProperty);
         data.addItemProperty("linkPreviewIndex", linkPreviewIndexProperty);
 
-        final ObjectProperty<String> nextPageSelectorProperty = new ObjectProperty<>("a");
-        final ObjectProperty<String> nextPageAttributeProperty = new ObjectProperty<>("href");
+        final ObjectProperty<String> nextPageSelectorProperty = new ObjectProperty<>(config.getProperty("nextPageSelector"));
+        final ObjectProperty<String> nextPageAttributeProperty = new ObjectProperty<>(config.getProperty("nextPageAttribute"));
 
         data.addItemProperty("nextPageSelector", nextPageSelectorProperty);
         data.addItemProperty("nextPageAttribute", nextPageAttributeProperty);
@@ -147,6 +175,9 @@ public class EditPageComponent extends CustomComponent {
         Property.ValueChangeListener nextPageLinkListener = event -> {
             generator.setNextPageSelector(nextPageSelectorProperty.getValue());
             generator.setNextPageAttribute(nextPageAttributeProperty.getValue());
+            putAndSave("nextPageSelector", nextPageSelectorProperty.getValue());
+            putAndSave("nextPageAttribute", nextPageAttributeProperty.getValue());
+
             refreshNextPageLinkPreview();
         };
         nextPageSelectorProperty.addValueChangeListener(nextPageLinkListener);
@@ -210,5 +241,14 @@ public class EditPageComponent extends CustomComponent {
         binder.setBuffered(false);
 
         setCompositionRoot(form);
+    }
+
+    private void putAndSave(String name, String value) {
+        config.put(name, value);
+        try (OutputStream os = Files.newOutputStream(baseDir.resolve("config.properties"))) {
+            config.store(os, "Parsing settings");
+        } catch (IOException ioe) {
+            logger.log(Level.SEVERE, "IOException while writing config:", ioe);
+        }
     }
 }
