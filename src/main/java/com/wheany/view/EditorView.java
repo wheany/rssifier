@@ -4,6 +4,7 @@ import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.VerticalLayout;
+import com.wheany.Util;
 import com.wheany.vaadiunui.EditPageComponent;
 
 import javax.annotation.PostConstruct;
@@ -14,16 +15,16 @@ import java.nio.file.Paths;
 public class EditorView extends VerticalLayout implements View {
     public static final String VIEW_NAME = "edit";
 
-    @PostConstruct
-    void init() {
-        System.out.println(EditorView.VIEW_NAME + " init");
-        Path path = Paths.get(".");//FIXME
-        addComponent(new EditPageComponent(path));
+    private final String id;
+
+    public EditorView(String id) {
+        this.id = id;
     }
 
     @Override
     public void enter(ViewChangeListener.ViewChangeEvent event) {
-        event.getParameters();
-        // the view is constructed in the init() method()
+        System.out.println(EditorView.VIEW_NAME + " enter");
+        Path path = Util.getPathFromName(id);
+        addComponent(new EditPageComponent(path));
     }
 }

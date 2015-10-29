@@ -8,6 +8,8 @@ import com.vaadin.spring.navigator.SpringViewProvider;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
+import com.wheany.view.EditorView;
+import com.wheany.view.NewView;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Arrays;
@@ -16,13 +18,15 @@ import java.util.Arrays;
 @SpringUI(path="rssifier/edit")
 public class EditorUI extends UI {
 
-    // we can use either constructor autowiring or field autowiring
-    @Autowired
-    private SpringViewProvider viewProvider;
-
     @Override
     protected void init(VaadinRequest request) {
-        System.out.println("EditorUI init");
+        String id = request.getParameter("id");
+        if (id == null) {
+            getPage().open("/rssifier", null, false);
+        } else {
+            System.out.println("EditorUI init, ID:" + id);
+        }
+
         final VerticalLayout root = new VerticalLayout();
         root.setSizeFull();
         root.setMargin(true);
@@ -35,9 +39,7 @@ public class EditorUI extends UI {
         root.setExpandRatio(viewContainer, 1.0f);
 
         Navigator navigator = new Navigator(this, viewContainer);
-        navigator.addProvider(viewProvider);
+        navigator.addProvider(new Navigator.StaticViewProvider("", new EditorView(id)));
 
-        request.getParameterMap().forEach((key, value) ->
-                System.out.printf("key: %s, value: %s\n", key, Arrays.toString(value)));
     }
 }
