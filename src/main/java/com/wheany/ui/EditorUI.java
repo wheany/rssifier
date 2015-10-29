@@ -1,4 +1,4 @@
-package com.wheany;
+package com.wheany.ui;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.fieldgroup.FieldGroup;
@@ -6,6 +6,9 @@ import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.data.util.PropertysetItem;
 import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.*;
+import com.wheany.Downloader;
+import com.wheany.RssGenerator;
+import com.wheany.URLValidator;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 
@@ -23,6 +26,7 @@ public class EditorUI extends CustomComponent {
     private final ObjectProperty<String> urlProperty = new ObjectProperty<>("");
     private final ObjectProperty<String> itemPreviewProperty = new ObjectProperty<>("");
     private final ObjectProperty<String> itemPreviewIndexProperty = new ObjectProperty<>("0/0");
+    private final Path baseDir;
     private int itemPreviewIndex = 0;
 
     private final ObjectProperty<String> linkElementPreviewProperty = new ObjectProperty<>("");
@@ -39,8 +43,8 @@ public class EditorUI extends CustomComponent {
 
         try {
             URL url = new URL(baseUrl);
-            downloader = new Downloader(url);
-            documentPath = downloader.download();
+            downloader = new Downloader(baseDir);
+            documentPath = downloader.download(url);
         } catch (MalformedURLException mue) {
             logger.log(Level.SEVERE, "Malformed url:" + baseUrl, mue);
             return;
@@ -96,7 +100,9 @@ public class EditorUI extends CustomComponent {
         nextPageUrlPreviewProperty.setValue(generator.getNextPageLink());
     }
 
-    public EditorUI() {
+    public EditorUI(Path baseDir) {
+        this.baseDir = baseDir;
+
         PropertysetItem data = new PropertysetItem();
 
         data.addItemProperty("url", urlProperty);

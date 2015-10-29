@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Random;
 import java.util.logging.Logger;
 
@@ -29,7 +30,27 @@ public class Util {
         return strings.toArray(new String[strings.size()]);
     }
 
-    public static Path makeWorkDir() {
+    public static class NamedPath {
+        public NamedPath(@NotNull String name, @NotNull Path path) {
+            this.name = Objects.requireNonNull(name);
+            this.path = Objects.requireNonNull(path);
+        }
+
+        @NotNull
+        public String getName() {
+            return name;
+        }
+
+        @NotNull
+        public Path getPath() {
+            return path;
+        }
+
+        @NotNull private final String name;
+        @NotNull private final Path path;
+    }
+
+    public static NamedPath makeWorkDir() {
         synchronized (rng) {
             String pathCandidateString;
             int  retryPathGeneration = NUM_RETRIES;
@@ -43,9 +64,8 @@ public class Util {
                             retryPathGeneration));
                     continue;
                 }
-                String[] pathParts = splitString(pathCandidateString.substring(0, MIN_PATH_LENGTH), PATH_COMPONENT_LENGTH);
-
-                Path workPathCandidate = Paths.get(WORK_PATH_PREFIX, pathParts);
+                String name = pathCandidateString.substring(0, MIN_PATH_LENGTH);
+                Path workPathCandidate = getPathFromName(name);
                 if(Files.exists(workPathCandidate)) {
                     logger.fine(String.format("path candidate %s exists, retries left %d",
                             workPathCandidate.toString(),
@@ -61,9 +81,15 @@ public class Util {
                             retryPathGeneration));
                     continue;
                 }
-                return workPathCandidate;
+                return new NamedPath(name, workPathCandidate);
             } while (retryPathGeneration > 0);
         }
         return null;
+    }
+
+    public static Path getPathFromName(String name) {
+        String[] pathParts = splitString(name, PATH_COMPONENT_LENGTH);
+
+        return Paths.get(WORK_PATH_PREFIX, pathParts);
     }
 }

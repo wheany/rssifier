@@ -1,4 +1,4 @@
-package com.wheany;
+package com.wheany.ui;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.navigator.Navigator;

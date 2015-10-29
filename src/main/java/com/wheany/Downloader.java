@@ -2,30 +2,26 @@ package com.wheany;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 public class Downloader {
-    private final URL url;
+    private final Path baseDir;
 
-    public Downloader(String url) throws MalformedURLException {
-        this.url = new URL(url);
-    }
-    public Downloader(URL url) {
-        this.url = url;
+    public Downloader(Path baseDir) {
+        this.baseDir = baseDir;
     }
 
-    public Path download() throws IOException {
+    public Path download(URL url) throws IOException {
         URLConnection conn = url.openConnection();
-        final Path workDir = Paths.get("rssifier-work");
+        final Path workDir = baseDir.resolve("download");
+
         Files.createDirectories(workDir);
 
-        Path workFile = Files.createTempFile(workDir, "rssfier-tmp", ".html");
+        Path workFile = Files.createTempFile(workDir, "rssfier-dl", ".html");
         workFile.toFile().deleteOnExit();
 
         try (final InputStream in = conn.getInputStream()) {
