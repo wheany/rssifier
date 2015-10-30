@@ -60,6 +60,7 @@ public class EditPageComponent extends CustomComponent {
             URL url = new URL(baseUrl);
             downloader = new Downloader(baseDir);
             documentPath = downloader.download(url);
+            putAndSave("url", baseUrl);
         } catch (MalformedURLException mue) {
             logger.log(Level.SEVERE, "Malformed url:" + baseUrl, mue);
             return;
@@ -119,10 +120,14 @@ public class EditPageComponent extends CustomComponent {
     public EditPageComponent(Path baseDir) {
         this.baseDir = baseDir;
         this.config = new Properties(defaults);
+        Path documentPath = baseDir.resolve("download/download.html");
         try (InputStream is = Files.newInputStream(baseDir.resolve("config.properties"))) {
             config.load(is);
-
-            urlProperty.setValue(config.getProperty("url"));
+            String baseUrl = config.getProperty("url");
+            urlProperty.setValue(baseUrl);
+            if (documentPath.toFile().exists()) {
+                generator.setDocument(Jsoup.parse(documentPath.toFile(), null, baseUrl));
+            }
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }

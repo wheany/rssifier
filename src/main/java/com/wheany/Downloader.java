@@ -21,7 +21,10 @@ public class Downloader {
 
         Files.createDirectories(workDir);
 
-        Path workFile = Files.createFile(workDir.resolve("download.html"));
+        Path workFile = workDir.resolve("download.html");
+        if(!workFile.toFile().exists()) {
+            Files.createFile(workFile);
+        }
 
         try (final InputStream in = conn.getInputStream()) {
             Files.copy(in, workFile, StandardCopyOption.REPLACE_EXISTING);
