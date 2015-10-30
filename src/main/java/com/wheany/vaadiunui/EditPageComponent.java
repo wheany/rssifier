@@ -243,6 +243,10 @@ public class EditPageComponent extends CustomComponent {
         nextPageLinkUrlPreviewComponent.setCaption("Next page link url preview");
         form.addComponent(nextPageLinkUrlPreviewComponent);
 
+        final Button generateButton = new Button("Generate RSS feed now", event -> {
+            generator.generateAndSave(baseDir.resolve("feed.xml"));
+        });
+        form.addComponent(generateButton);
         binder.setBuffered(false);
 
         setCompositionRoot(form);

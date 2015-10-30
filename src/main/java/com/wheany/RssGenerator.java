@@ -7,6 +7,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 
@@ -202,5 +208,25 @@ public class RssGenerator {
         });
 
         return feed;
+    }
+
+    public void generateAndSave(Path path) {
+        Rss rss = generate();
+
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(Rss.class);
+            Marshaller marshaller = jaxbContext.createMarshaller();
+
+            if (!path.toFile().exists()) {
+                Files.createFile(path);
+            }
+
+            marshaller.marshal(rss, path.toFile());
+
+        } catch (JAXBException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
