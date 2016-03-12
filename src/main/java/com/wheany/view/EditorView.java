@@ -7,9 +7,7 @@ import com.vaadin.ui.VerticalLayout;
 import com.wheany.Util;
 import com.wheany.vaadiunui.EditPageComponent;
 
-import javax.annotation.PostConstruct;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @SpringView(name = EditorView.VIEW_NAME)
 public class EditorView extends VerticalLayout implements View {

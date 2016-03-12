@@ -4,15 +4,10 @@ import com.vaadin.annotations.Theme;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.spring.navigator.SpringViewProvider;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 import com.wheany.view.EditorView;
-import com.wheany.view.NewView;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Arrays;
 
 @Theme("rssifier")
 @SpringUI(path="rssifier/edit")
