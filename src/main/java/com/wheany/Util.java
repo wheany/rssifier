@@ -1,6 +1,7 @@
 package com.wheany;
 
 import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Files;
@@ -24,36 +25,17 @@ public class Util {
         ArrayList<String> strings = new ArrayList<>(source.length()/length);
 
         for(int start = 0; start < source.length(); start += PATH_COMPONENT_LENGTH) {
-            strings.add(source.substring(start, start + length));
+            int end = Math.min(start + length, source.length());
+            strings.add(source.substring(start, end));
         }
 
         return strings.toArray(new String[strings.size()]);
     }
 
-    public static class NamedPath {
-        public NamedPath(@NotNull String name, @NotNull Path path) {
-            this.name = Objects.requireNonNull(name);
-            this.path = Objects.requireNonNull(path);
-        }
-
-        @NotNull
-        public String getName() {
-            return name;
-        }
-
-        @NotNull
-        public Path getPath() {
-            return path;
-        }
-
-        @NotNull private final String name;
-        @NotNull private final Path path;
-    }
-
     public static NamedPath makeWorkDir() {
         synchronized (rng) {
             String pathCandidateString;
-            int  retryPathGeneration = NUM_RETRIES;
+            int retryPathGeneration = NUM_RETRIES;
             do {
                 retryPathGeneration--;
 
@@ -66,7 +48,7 @@ public class Util {
                 }
                 String name = pathCandidateString.substring(0, MIN_PATH_LENGTH);
                 Path workPathCandidate = getPathFromName(name);
-                if(Files.exists(workPathCandidate)) {
+                if (Files.exists(workPathCandidate)) {
                     logger.fine(String.format("path candidate %s exists, retries left %d",
                             workPathCandidate.toString(),
                             retryPathGeneration));
@@ -91,5 +73,27 @@ public class Util {
         String[] pathParts = splitString(name, PATH_COMPONENT_LENGTH);
 
         return Paths.get(WORK_PATH_PREFIX, pathParts);
+    }
+
+    public static class NamedPath {
+        @NotNull
+        private final String name;
+        @NotNull
+        private final Path path;
+
+        public NamedPath(@NotNull String name, @NotNull Path path) {
+            this.name = Objects.requireNonNull(name);
+            this.path = Objects.requireNonNull(path);
+        }
+
+        @NotNull
+        public String getName() {
+            return name;
+        }
+
+        @NotNull
+        public Path getPath() {
+            return path;
+        }
     }
 }
