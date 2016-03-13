@@ -6,39 +6,37 @@ Very unfinished at this point, done as a Spring/Vaadin excercise with practicall
 #Usage
 Should "just work" when run with maven `mvn spring-boot:run`
 
-Visit `http://localhost:8080/` with your browser.
+Visit `http://localhost:8080/rssifier` with your browser.
 
 The UI is pretty horrible as-is, but here are some values to try:
-###Url to fetch: 
+###Page URL: 
 `http://www.tuulivoimayhdistys.fi/ajankohtaista/uutiset`
 
-###Selector for items
+(click on "Download URL")
+
+###Item selector
 `.articles_article`
 
-###Selector for link
+###Link selector
 `a`
 
-* Click on "Test link and attribute selector"
-
-###Attribute for link
+###Link attribut
 `href`
 
-###Selector for next page link
+###Next page link selector
 `.zfse_pageNext a`
 
-###Attribute for link
+###Next page link attribute
 `href`
 
-* Click on "Test link and attribute selector"
+When you click on "Generate RSS feed now", an xml file should appear under `rssifier-work` directory, is a subdirectory 
+that resembles the id attribute in the browser's address field (`http://localhost:8080/rssifier/edit?id=<page id>`), 
+except grouped in 2 character groups, with each character group forming a new sub directory. I.e. aabbcc --> aa/bb/cc
 
-When you click on "Generate", an xml file should appear under `generated-rss` directory.
-Remember to click each of the "Test link and attribute selector" buttons before clicking on "Generate",
-or the generation will fail.
+You can also access the feed as an actual RSS feed by visiting the address 
+`http://localhost:8080/rssifier/feed/<page id>`, after clicking on the "Generate RSS feed now" button
 
 ##TODO:
-* Make clicking on "Test link and attribute selector" buttons not required.
-* Save the values given on the page so that...
-* ... a timed task can be used to refresh the page content periodically
-* Serve the generated rss with the correct content-type
-  * (Then when the above point works) Purge old entries and feeds that no-one has read
+* a timed task to refresh the page content periodically
+* Purge old entries and feeds that no-one has read
 * actually fetch content from following pages using the url from "next page" selector
