@@ -73,7 +73,7 @@ public class NewPageComponent extends CustomComponent {
         }
 
         URI location = getUI().getPage().getLocation();
-        String newLocation = location.toString() + "edit?id=" + namedPath.getName();
+        String newLocation = location.toString() + "/edit?id=" + namedPath.getName();
         getUI().getPage().open(newLocation, null, false);
     }
 }
