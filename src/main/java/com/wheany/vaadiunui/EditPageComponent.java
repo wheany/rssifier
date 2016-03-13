@@ -25,22 +25,6 @@ import java.util.logging.Logger;
 
 public class EditPageComponent extends CustomComponent {
     private static final Logger logger = Logger.getLogger(EditPageComponent.class.getName());
-    private final RssGenerator generator = new RssGenerator();
-
-    private final ObjectProperty<String> urlProperty = new ObjectProperty<>("");
-    private final ObjectProperty<String> itemPreviewProperty = new ObjectProperty<>("");
-    private final ObjectProperty<String> itemPreviewIndexProperty = new ObjectProperty<>("0/0");
-    private final Path baseDir;
-    private final Properties config;
-    private int itemPreviewIndex = 0;
-
-    private final ObjectProperty<String> linkElementPreviewProperty = new ObjectProperty<>("");
-    private final ObjectProperty<String> linkUrlPreviewProperty = new ObjectProperty<>("");
-    private final ObjectProperty<String> linkPreviewIndexProperty = new ObjectProperty<>("0/0");
-
-    private final ObjectProperty<String> nextPageLinkElementPreviewProperty = new ObjectProperty<>("");
-    private final ObjectProperty<String> nextPageUrlPreviewProperty = new ObjectProperty<>("");
-
     private static Properties defaults = new Properties();
 
     static {
@@ -51,71 +35,18 @@ public class EditPageComponent extends CustomComponent {
         defaults.put("nextPageAttribute", "href");
     }
 
-    private void downloadAndParse() {
-        Downloader downloader;
-        Path documentPath;
-        String baseUrl = urlProperty.getValue();
-
-        try {
-            URL url = new URL(baseUrl);
-            downloader = new Downloader(baseDir);
-            documentPath = downloader.download(url);
-            putAndSave("url", baseUrl);
-        } catch (MalformedURLException mue) {
-            logger.log(Level.SEVERE, "Malformed url:" + baseUrl, mue);
-            return;
-        } catch (IOException ioe) {
-            logger.log(Level.SEVERE, "IOException while downloading:", ioe);
-            return;
-        }
-        try {
-            generator.setDocument(Jsoup.parse(documentPath.toFile(), null, baseUrl));
-        } catch (IOException ioe) {
-            logger.log(Level.SEVERE, "IOException while parsing document:", ioe);
-        }
-    }
-
-    private void refreshItemAndLinkPreview() {
-        int numElements = generator.getNumElements() - 1;
-        itemPreviewIndex = Math.min(Math.max(itemPreviewIndex, 0), numElements);
-
-        if (numElements > 0) {
-            itemPreviewIndexProperty.setValue(String.format("%d/%d", itemPreviewIndex + 1, generator.getNumElements()));
-            linkPreviewIndexProperty.setValue(String.format("%d/%d", itemPreviewIndex + 1, generator.getNumLinks()));
-        } else {
-            itemPreviewIndexProperty.setValue(" — ");
-            linkPreviewIndexProperty.setValue(" — ");
-        }
-
-        Element itemElement = generator.getItemElement(itemPreviewIndex);
-        if (itemElement != null) {
-            itemPreviewProperty.setValue(itemElement.outerHtml());
-        } else {
-            itemPreviewProperty.setValue("[Item element not found]");
-        }
-        Element linkElement = generator.getLinkElement(itemPreviewIndex);
-        if (linkElement != null) {
-            linkElementPreviewProperty.setValue(linkElement.outerHtml());
-        } else {
-            linkElementPreviewProperty.setValue("[Link element not found]");
-        }
-        String linkUrl = generator.getLink(itemPreviewIndex);
-        if (linkUrl != null) {
-            linkUrlPreviewProperty.setValue(linkUrl);
-        } else {
-            linkUrlPreviewProperty.setValue("");
-        }
-    }
-
-    private void refreshNextPageLinkPreview() {
-        Element nextPageLinkElement = generator.getNextPageElement();
-        if (nextPageLinkElement != null) {
-            nextPageLinkElementPreviewProperty.setValue(nextPageLinkElement.outerHtml());
-        } else {
-            nextPageLinkElementPreviewProperty.setValue("[Next page link element not found]");
-        }
-        nextPageUrlPreviewProperty.setValue(generator.getNextPageLink());
-    }
+    private final RssGenerator generator = new RssGenerator();
+    private final ObjectProperty<String> urlProperty = new ObjectProperty<>("");
+    private final ObjectProperty<String> itemPreviewProperty = new ObjectProperty<>("");
+    private final ObjectProperty<String> itemPreviewIndexProperty = new ObjectProperty<>("0/0");
+    private final Path baseDir;
+    private final Properties config;
+    private final ObjectProperty<String> linkElementPreviewProperty = new ObjectProperty<>("");
+    private final ObjectProperty<String> linkUrlPreviewProperty = new ObjectProperty<>("");
+    private final ObjectProperty<String> linkPreviewIndexProperty = new ObjectProperty<>("0/0");
+    private final ObjectProperty<String> nextPageLinkElementPreviewProperty = new ObjectProperty<>("");
+    private final ObjectProperty<String> nextPageUrlPreviewProperty = new ObjectProperty<>("");
+    private int itemPreviewIndex = 0;
 
     public EditPageComponent(Path baseDir) {
         this.baseDir = baseDir;
@@ -139,7 +70,6 @@ public class EditPageComponent extends CustomComponent {
         final ObjectProperty<String> itemSelectorProperty = new ObjectProperty<>(config.getProperty("itemSelector"));
 
         itemSelectorProperty.addValueChangeListener(event -> {
-            generator.setItemSelector(itemSelectorProperty.getValue());
             putAndSave("itemSelector", itemSelectorProperty.getValue());
             itemPreviewIndex = 0;
             refreshItemAndLinkPreview();
@@ -154,8 +84,6 @@ public class EditPageComponent extends CustomComponent {
         final ObjectProperty<String> linkAttributeProperty = new ObjectProperty<>(config.getProperty("linkAttribute"));
 
         Property.ValueChangeListener linkListener = event -> {
-            generator.setLinkSelector(linkSelectorProperty.getValue());
-            generator.setLinkAttribute(linkAttributeProperty.getValue());
             putAndSave("linkSelector", linkSelectorProperty.getValue());
             putAndSave("linkAttribute", linkAttributeProperty.getValue());
             itemPreviewIndex = 0;
@@ -178,8 +106,6 @@ public class EditPageComponent extends CustomComponent {
         data.addItemProperty("nextPageAttribute", nextPageAttributeProperty);
 
         Property.ValueChangeListener nextPageLinkListener = event -> {
-            generator.setNextPageSelector(nextPageSelectorProperty.getValue());
-            generator.setNextPageAttribute(nextPageAttributeProperty.getValue());
             putAndSave("nextPageSelector", nextPageSelectorProperty.getValue());
             putAndSave("nextPageAttribute", nextPageAttributeProperty.getValue());
 
@@ -250,6 +176,76 @@ public class EditPageComponent extends CustomComponent {
         binder.setBuffered(false);
 
         setCompositionRoot(form);
+    }
+
+    private void downloadAndParse() {
+        Downloader downloader;
+        Path documentPath;
+        String baseUrl = urlProperty.getValue();
+
+        try {
+            URL url = new URL(baseUrl);
+            downloader = new Downloader(baseDir);
+            documentPath = downloader.download(url);
+            putAndSave("url", baseUrl);
+        } catch (MalformedURLException mue) {
+            logger.log(Level.SEVERE, "Malformed url:" + baseUrl, mue);
+            return;
+        } catch (IOException ioe) {
+            logger.log(Level.SEVERE, "IOException while downloading:", ioe);
+            return;
+        }
+        try {
+            generator.setDocument(Jsoup.parse(documentPath.toFile(), null, baseUrl));
+        } catch (IOException ioe) {
+            logger.log(Level.SEVERE, "IOException while parsing document:", ioe);
+        }
+    }
+
+    private void refreshItemAndLinkPreview() {
+        generator.configure(config);
+
+        int numElements = generator.getNumElements() - 1;
+        itemPreviewIndex = Math.min(Math.max(itemPreviewIndex, 0), numElements);
+
+        if (numElements > 0) {
+            itemPreviewIndexProperty.setValue(String.format("%d/%d", itemPreviewIndex + 1, generator.getNumElements()));
+            linkPreviewIndexProperty.setValue(String.format("%d/%d", itemPreviewIndex + 1, generator.getNumLinks()));
+        } else {
+            itemPreviewIndexProperty.setValue(" — ");
+            linkPreviewIndexProperty.setValue(" — ");
+        }
+
+        Element itemElement = generator.getItemElement(itemPreviewIndex);
+        if (itemElement != null) {
+            itemPreviewProperty.setValue(itemElement.outerHtml());
+        } else {
+            itemPreviewProperty.setValue("[Item element not found]");
+        }
+        Element linkElement = generator.getLinkElement(itemPreviewIndex);
+        if (linkElement != null) {
+            linkElementPreviewProperty.setValue(linkElement.outerHtml());
+        } else {
+            linkElementPreviewProperty.setValue("[Link element not found]");
+        }
+        String linkUrl = generator.getLink(itemPreviewIndex);
+        if (linkUrl != null) {
+            linkUrlPreviewProperty.setValue(linkUrl);
+        } else {
+            linkUrlPreviewProperty.setValue("");
+        }
+    }
+
+    private void refreshNextPageLinkPreview() {
+        generator.configure(config);
+
+        Element nextPageLinkElement = generator.getNextPageElement();
+        if (nextPageLinkElement != null) {
+            nextPageLinkElementPreviewProperty.setValue(nextPageLinkElement.outerHtml());
+        } else {
+            nextPageLinkElementPreviewProperty.setValue("[Next page link element not found]");
+        }
+        nextPageUrlPreviewProperty.setValue(generator.getNextPageLink());
     }
 
     private void putAndSave(String name, String value) {
